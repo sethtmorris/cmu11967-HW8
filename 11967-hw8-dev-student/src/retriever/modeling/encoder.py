@@ -70,7 +70,10 @@ class EncoderModel(nn.Module):
         Returns:
         - reps: tensor of shape (batch_size, hidden_dim)
         """
-        raise NotImplementedError()
+        last_token_indices = attention_mask.sum(dim=1) - 1
+        hidden_states = last_hidden_state[:, last_token_indeces]
+        reps = F.normalize(hidden_states, p=2, dim=1)
+        return reps
 
     def encode_text(self, text):
         hidden_states = self.encoder(**text, return_dict=True)
@@ -93,7 +96,9 @@ class EncoderModel(nn.Module):
         Returns:
         - similarity_matrix: tensor of shape (n_queries, n_passages)
         """
-        raise NotImplementedError()
+        dot_product = torch.matmul(q_reps, p_reps.T)
+        
+        return dot_product / T
 
     def compute_labels(self, n_queries, n_passages):
         """
@@ -122,7 +127,7 @@ class EncoderModel(nn.Module):
         Returns:
         - target: tensor of shape (n_queries)
         """
-        raise NotImplementedError()
+        return torch.tensor(n_queries)
     
     def compute_loss(self, scores, target):
         """
@@ -135,7 +140,10 @@ class EncoderModel(nn.Module):
         Returns:
         - loss: mean reduced loss.
         """
-        raise NotImplementedError()
+        loss_func = nn.CrossEntropyLoss(reduction='mean')
+        loss = loss_func(scores, target)
+
+        return loss
 
     def gradient_checkpointing_enable(self, **kwargs):
         try:
