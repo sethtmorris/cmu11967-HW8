@@ -71,7 +71,7 @@ class EncoderModel(nn.Module):
         - reps: tensor of shape (batch_size, hidden_dim)
         """
         last_token_indices = attention_mask.sum(dim=1) - 1
-        hidden_states = last_hidden_state[:, last_token_indeces]
+        hidden_states = last_hidden_state[:, last_token_indices]
         reps = F.normalize(hidden_states, p=2, dim=1)
         return reps
 
@@ -98,7 +98,7 @@ class EncoderModel(nn.Module):
         """
         dot_product = torch.matmul(q_reps, p_reps.T)
         
-        return dot_product / T
+        return dot_product / temperature
 
     def compute_labels(self, n_queries, n_passages):
         """
