@@ -71,8 +71,17 @@ class EncoderModel(nn.Module):
         - reps: tensor of shape (batch_size, hidden_dim)
         """
         last_token_indices = attention_mask.sum(dim=1) - 1
-        hidden_states = last_hidden_state[:, last_token_indices]
-        reps = F.normalize(hidden_states, p=2, dim=1)
+        print(last_token_indices)
+        hidden_states = last_hidden_state[0, last_token_indices[0]]
+        print(hidden_states)
+        for i, batch in enumerate(last_hidden_state):
+            if i == 0:
+               continue
+            hidden_states = torch.stack((hidden_states, batch[last_token_indices[i]]), 0)
+            print(hidden_states)
+        #hidden_states = torch.tensor(hidden_states)
+        reps = F.normalize(hidden_states, p=2, dim=-1)
+        print(reps)
         return reps
 
     def encode_text(self, text):
@@ -127,7 +136,8 @@ class EncoderModel(nn.Module):
         Returns:
         - target: tensor of shape (n_queries)
         """
-        return torch.tensor(n_queries)
+        passages_per_query = n_passages // n_queries
+        return torch.arange(0, n_passages, passages_per_query)
     
     def compute_loss(self, scores, target):
         """
