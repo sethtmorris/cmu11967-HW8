@@ -71,18 +71,24 @@ class EncoderModel(nn.Module):
         - reps: tensor of shape (batch_size, hidden_dim)
         """
         last_token_indices = attention_mask.sum(dim=1) - 1
-        print(last_token_indices)
+        #print(last_token_indices)
         hidden_states = last_hidden_state[0, last_token_indices[0]]
-        print(hidden_states)
+        #if len(hidden_states.shape) < 2:
+        hidden_states = torch.unsqueeze(hidden_states, 0)
+        #print(hidden_states)
         for i, batch in enumerate(last_hidden_state):
             if i == 0:
                continue
-            hidden_states = torch.stack((hidden_states, batch[last_token_indices[i]]), 0)
-            print(hidden_states)
+            new_hidden_state = batch[last_token_indices[i]]
+            #print(new_hidden_state)
+            #if len(new_hidden_state.shape) < 2:
+            new_hidden_state = torch.unsqueeze(new_hidden_state, 0)
+            hidden_states = torch.cat((hidden_states, new_hidden_state), 0)
+            #print(hidden_states)
         #hidden_states = torch.tensor(hidden_states)
         reps = F.normalize(hidden_states, p=2, dim=-1)
-        print(reps)
-        return reps
+        #print(reps)
+        return reps #torch.squeeze(torch.squeeze(reps, 0), 1)
 
     def encode_text(self, text):
         hidden_states = self.encoder(**text, return_dict=True)
