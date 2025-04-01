@@ -12,7 +12,7 @@ python -m driver.encode \
   --model_name_or_path ./data/model/$trained_model_name \
   --bf16 \
   --encode_is_query \
-  --per_device_eval_batch_size 128 \
+  --per_device_eval_batch_size 100 \
   --query_max_len 32 \
   --passage_max_len 128 \
   --dataset_name jmvcoelho/toy-queries \
@@ -22,7 +22,7 @@ python -m driver.encode \
   --output_dir=temp \
   --model_name_or_path ./data/model/$trained_model_name \
   --bf16 \
-  --per_device_eval_batch_size 128 \
+  --per_device_eval_batch_size 100 \
   --query_max_len 32 \
   --passage_max_len 128 \
   --dataset_name jmvcoelho/toy-corpus \
