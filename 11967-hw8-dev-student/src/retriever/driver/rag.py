@@ -41,7 +41,7 @@ def initialize_pythia(
     tokenizer.pad_token = tokenizer.eos_token
     tokenizer.padding_side = "left"
 
-    model = AutoModelForCausalLM.from_pretrained(model_name, attn_implementation="flash_attention_2", torch_dtype=torch.bfloat16).to(device)
+    model = AutoModelForCausalLM.from_pretrained(model_name, attn_implementation="eager", torch_dtype=torch.bfloat16).to(device)
 
     return tokenizer, model
 
@@ -115,7 +115,16 @@ def get_rag(query_id, doc2text, query2docs, top_n, shuffle):
     Returns:
         str: white-space separeted text of top-N documents.
     """
-    raise NotImplementedError()
+    if query_id not in query2docs:
+        return ''
+
+    if shuffle:
+        doc_ids = random.shuffle(query2docs[query_id][:top_n])
+    else:
+        doc_ids = query2docs[query_id][:top_n]
+
+    return ' '.join(doc2text[doc_id] for doc_id in doc_ids)
+
 
 
 def apply_prompt(prefixes, trec_run, doc2text, query2docs):
@@ -182,15 +191,22 @@ def main():
         dataset = load_dataset('jmvcoelho/toy-corpus', split='train')
         
         docid_to_text = {}
-        raise NotImplementedError()
+        print(dataset)
         #TODO: parse the huggingface dataset, and populate docid_to_text, mapping the document identifier to its repective content.
+        for doc in dataset:
+            docid_to_text[doc['docid']] = doc['text']
 
         qid_to_topdocs = {}
 
         with open(args.augmentation_run, 'r') as h:
-            raise NotImplementedError()
+            #raise NotImplementedError()
             #TODO: Read the run file, and populate qid_to_topdocs, mapping query ids to a list of top-document ids.
-
+            for line in h:
+                parts = line.strip().split()
+                qid, q0, doc_id = parts[:3]
+                if qid not in qid_to_topdocs:
+                    qid_to_topdocs[qid] = []
+                qid_to_topdocs[query_id].append(doc_id)
 
     else: # this means that RAG won't be performed.
         docid_to_text = None
